@@ -6,12 +6,19 @@
 #define CONFIG_H
 
 #include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 	/* Shared configuration */
-extern const char *tahoma;	/* Tahoma's hostname */
-extern const char *token;	/* Bearer Token */
+extern char *tahoma;	/* Tahoma's hostname */
+extern uint16_t port;	/* TaHoma's port */
+extern char *token;	/* Bearer Token */
 
-extern const char *url;	/* base API url */
-size_t url_len;			/* URL's length */
+extern char *url;	/* base API url */
+extern size_t url_len;	/* URL's length */
+extern bool debug;
+
+	/* Utilities */
+extern const char *FreeAndSet(char **storage, const char *val);
 
 #endif
