@@ -19,6 +19,7 @@ extern char *token;	/* Bearer Token */
 extern char *url;	/* base API url */
 extern size_t url_len;	/* URL's length */
 extern bool debug;
+extern bool trace;
 extern bool verbose;
 
 	/* Utilities */
