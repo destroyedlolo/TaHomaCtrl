@@ -6,16 +6,18 @@
  * 	8/11/2025 - LF - First version
  */
 
-#include "Config.h"
+#include "TaHomaCtl.h"
 
 #include <unistd.h>	/* getopt() */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #define VERSION "0.1"
-                                                                                
+
 	/* **
 	 * Configuration
 	 * **/
@@ -40,6 +42,38 @@ const char *FreeAndSet(char **storage, const char *val){
 
 	return(*storage);
 }
+
+	/* ***
+	 * Commands interpreter
+	 * ***/
+
+void func_qmark(const char *);
+
+void func_quit(const char *){
+	exit(EXIT_SUCCESS);
+}
+
+struct _commands {
+	const char *name;			// Command's name
+	void(*func)(const char *);	// executor
+	const char *help;			// Help message
+} Commands[] = {
+	{ "?", func_qmark, "List available commands" },
+	{ "Quit", func_quit, "See you" },
+	{ NULL }
+};
+
+void func_qmark(const char *){
+	puts("List of known commands\n"
+		 "----------------------");
+
+	for(struct _commands *c = Commands; c->name; ++c)
+		printf("'%s' : %s\n", c->name, c->help);
+}
+
+	/* ***
+	 * Here we go
+	 * ***/
 
 int main(int ac, char **av){
 	int opt;
@@ -73,4 +107,11 @@ int main(int ac, char **av){
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	if(isatty(STDIN_FILENO))
+		puts("Interactive");
+	else
+		puts("Non Interactive");
+
+func_qmark(NULL);
 }

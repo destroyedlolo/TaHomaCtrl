@@ -1,5 +1,5 @@
 # makefile created automaticaly by LFMakeMaker
-# LFMakeMaker 1.6 (May  7 2022 20:46:23) (c)LFSoft 1997
+# LFMakeMaker 1.6 (Apr 26 2025 11:57:56) (c)LFSoft 1997
 
 gotoall: all
 
@@ -8,7 +8,7 @@ gotoall: all
 cc=cc -Wall -pedantic -O2
 opts=
 
-TaHomaCtl.o : TaHomaCtl.c Config.h Makefile 
+TaHomaCtl.o : TaHomaCtl.c TaHomaCtl.h Makefile 
 	$(cc) -c -o TaHomaCtl.o TaHomaCtl.c $(opts) 
 
 TaHomaCtl : TaHomaCtl.o Makefile 

@@ -1,9 +1,11 @@
-/* Config.h
+/* TaHomaCtl.h
+ *
+ *	Shared definition
  *
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef TAHOMACTL_H
+#define TAHOMACTL_H
 
 #include <stddef.h>
 #include <stdint.h>
