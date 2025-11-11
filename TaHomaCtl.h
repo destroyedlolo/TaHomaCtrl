@@ -25,4 +25,8 @@ extern bool verbose;
 	/* Utilities */
 extern const char *FreeAndSet(char **storage, const char *val);
 
+	/* Sharing functions */
+extern void clean(char **);		// Clean a configuration reference
+extern void func_scan(const char *);
+
 #endif

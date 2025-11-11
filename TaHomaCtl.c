@@ -45,6 +45,13 @@ const char *FreeAndSet(char **storage, const char *val){
 	return(*storage);
 }
 
+void clean(char **obj){
+	if(*obj){
+		free(*obj);
+		*obj = NULL;
+	}
+}
+
 	/* ***
 	 * Commands interpreter
 	 * ***/
@@ -85,6 +92,7 @@ struct _commands {
 	const char *help;			// Help message
 } Commands[] = {
 	{ "#", NULL, "Comment, ignored line" },
+	{ "scan", func_scan, "Look for Tahoma's ZeroConf advertising" },
 	{ "verbose", func_verbose, "[on|off|] Be verbose" },
 	{ "trace", func_trace, "[on|off|] Trace every commands" },
 	{ "?", func_qmark, "List available commands" },
