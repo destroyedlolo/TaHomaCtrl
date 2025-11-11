@@ -47,9 +47,9 @@ const char *FreeAndSet(char **storage, const char *val){
 	 * Commands interpreter
 	 * ***/
 
-void func_qmark(const char *);
+static void func_qmark(const char *);
 
-void func_quit(const char *){
+static void func_quit(const char *){
 	exit(EXIT_SUCCESS);
 }
 
@@ -63,12 +63,62 @@ struct _commands {
 	{ NULL }
 };
 
-void func_qmark(const char *){
+static void func_qmark(const char *){
 	puts("List of known commands\n"
 		 "----------------------");
 
 	for(struct _commands *c = Commands; c->name; ++c)
 		printf("'%s' : %s\n", c->name, c->help);
+}
+
+static void exec(const char *cmd, const char *arg){
+	for(struct _commands *c = Commands; c->name; ++c){
+		if(!strcmp(cmd, c->name)){
+			c->func(arg);
+			return;
+		}
+	}
+
+	printf("*E* Unknown command \"%s\" : type '?' for list of known directives\n", cmd);
+}
+
+static void execline(char *l){
+	char *arg;
+
+	if((arg = strpbrk(l, " \t"))){
+		*(arg++) = 0;
+		while( *arg && !isgraph(*arg))	// skip non printable
+			++arg;
+
+		exec(l, *arg ? arg:NULL );
+	} else	// No argument
+		exec(l, NULL);
+}
+
+char *command_generator(const char *text, int state) {
+    static int list_index, len;
+    const char *name;
+
+    if (!state) {
+        list_index = 0;
+        len = strlen(text);
+    }
+
+    // Iterate through the command_table for names
+    while((name = Commands[list_index].name)){
+        ++list_index;
+        if(!strncmp(name, text, len))
+            return (strdup(name));
+    }
+
+    return ((char *)NULL);
+}
+
+char **command_completion(const char *text, int start, int end){
+	rl_attempted_completion_over = 1;
+	if(!start)
+        return rl_completion_matches(text, command_generator);
+    return ((char **)NULL);
 }
 
 	/* ***
@@ -108,10 +158,20 @@ int main(int ac, char **av){
 		}
 	}
 
-	if(isatty(STDIN_FILENO))
-		puts("Interactive");
-	else
-		puts("Non Interactive");
+		/* Command line handling */
+	rl_attempted_completion_function = command_completion;
+	for(;;){
+		char *l = readline(isatty(STDIN_FILENO) ? "TaHomaCtl > ":NULL);
+		
+		if(!l)			// End requested
+			break;
 
-func_qmark(NULL);
+		char *line;
+		for(line = l; *line && !isgraph(*line); ++line);	// Strip spaces
+
+		if(*line)	// Ignore empty line
+			execline(line);
+
+		free(l);
+	}
 }
