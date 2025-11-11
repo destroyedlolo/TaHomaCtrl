@@ -27,6 +27,7 @@ char *token = NULL;
 
 char *url = NULL;
 size_t url_len;
+bool verbose = false;
 bool debug = false;
 
 	/* **
@@ -49,6 +50,18 @@ const char *FreeAndSet(char **storage, const char *val){
 
 static void func_qmark(const char *);
 
+static void func_verbose(const char *arg){
+	if(arg){
+		if(!strcmp(arg, "on"))
+			verbose = true;
+		else if(!strcmp(arg, "off"))
+			verbose = false;
+		else
+			fputs("*E* Verbose accepts only 'on' and 'off'\n", stderr);
+	} else
+		puts(verbose ? "I'm verbose" : "I'm quiet");
+}
+
 static void func_quit(const char *){
 	exit(EXIT_SUCCESS);
 }
@@ -58,6 +71,7 @@ struct _commands {
 	void(*func)(const char *);	// executor
 	const char *help;			// Help message
 } Commands[] = {
+	{ "verbose", func_verbose, "[on|off|] Be verbose" },
 	{ "?", func_qmark, "List available commands" },
 	{ "Quit", func_quit, "See you" },
 	{ NULL }
@@ -128,7 +142,7 @@ char **command_completion(const char *text, int start, int end){
 int main(int ac, char **av){
 	int opt;
 
-	while( (opt = getopt(ac, av, ":+hH:p:t:d")) != -1){
+	while( (opt = getopt(ac, av, ":+hH:p:t:dv")) != -1){
 		switch(opt){
 		case 'H':
 			FreeAndSet(&tahoma, optarg);
@@ -138,6 +152,9 @@ int main(int ac, char **av){
 			break;
 		case 'd':
 			debug = true;
+			break;
+		case 'v':
+			verbose = true;
 			break;
 		case '?':	/* Unknown option */
 			fprintf(stderr, "unknown option: -%c\n", optopt);
