@@ -191,10 +191,16 @@ char **command_completion(const char *text, int start, int end){
 int main(int ac, char **av){
 	int opt;
 
-	while( (opt = getopt(ac, av, ":+hH:p:k:f:dvt")) != -1){
+	while( (opt = getopt(ac, av, ":+hH:p:k:f:dvt46")) != -1){
 		switch(opt){
 		case 'f':
 			execscript(optarg);
+			break;
+		case '4':
+			avahiIP = AVAHI_PROTO_INET;
+			break;
+		case '6':
+			avahiIP = AVAHI_PROTO_INET6;
 			break;
 		case 'H':
 			FreeAndSet(&tahoma, optarg);
@@ -224,6 +230,8 @@ int main(int ac, char **av){
 				"\t-H : set TaHoma's hostname\n"
 				"\t-p : set TaHoma's port\n"
 				"\t-k : set bearer token\n"
+				"\t-4 : resolve Avahi advertisement in IPv4 only\n"
+				"\t-6 : resolve Avahi advertisement in IPv6 only\n"
 				"\t-v : add verbosity\n"
 				"\t-t : add tracing\n"
 				"\t-d : add some debugging messages\n"

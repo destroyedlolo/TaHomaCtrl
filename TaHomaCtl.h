@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <avahi-common/address.h>	/* for AvahiProtocol */
+
 	/* Shared configuration */
 extern char *tahoma;	/* Tahoma's hostname */
 extern uint16_t port;	/* TaHoma's port */
@@ -18,6 +20,9 @@ extern char *token;	/* Bearer Token */
 
 extern char *url;	/* base API url */
 extern size_t url_len;	/* URL's length */
+
+extern AvahiProtocol avahiIP;
+
 extern bool debug;
 extern bool trace;
 extern bool verbose;

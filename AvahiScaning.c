@@ -12,6 +12,8 @@
 #include <avahi-common/error.h>
 #include <avahi-common/defs.h> 
 
+AvahiProtocol avahiIP = AVAHI_PROTO_UNSPEC;
+
 // The service type we are looking for
 #define SERVICE_TYPE "_kizboxdev._tcp"
 
@@ -41,7 +43,7 @@ static void resolve_callback(
 
 	switch(event) {
 	case AVAHI_RESOLVER_FAILURE: // Handle resolution failure
-		fprintf(stderr, "*E* (Resolver) Failed to resolve service '%s': %s\n", 
+		fprintf(stderr, "*W* [Resolver] Failed to resolve service '%s': %s\n", 
 			name, avahi_strerror(avahi_client_errno((AvahiClient*)userdata)));
 		break;
 	case AVAHI_RESOLVER_FOUND: {
@@ -86,24 +88,26 @@ static void browse_callback(
 		avahi_simple_poll_quit(simple_poll);
 		break;
 	case AVAHI_BROWSER_NEW:
-		printf("\n🔍 **New service found:** '%s' of type '%s' in domain '%s'\n", name, type, domain);
+		if(debug)
+			printf("*D* **New service found:** '%s' of type '%s' in domain '%s'\n", name, type, domain);
 			
 		// Start resolution to get address and port
-		if(!(avahi_service_resolver_new(c, interface, protocol, name, type, domain, AVAHI_PROTO_UNSPEC, 0, resolve_callback, c))){
+		if(!(avahi_service_resolver_new(c, interface, protocol, name, type, domain, avahiIP, 0, resolve_callback, c))){
 			fprintf(stderr, "*E* Failed to create resolver for '%s': %s\n", name, avahi_strerror(avahi_client_errno(c)));
 		}
 		break;
-#if 0
 	case AVAHI_BROWSER_REMOVE:
-		printf("\n❌ **Service removed:** '%s' of type '%s' in domain '%s'\n", name, type, domain);
+		if(debug)
+			printf("*D* **Service removed:** '%s' of type '%s' in domain '%s'\n", name, type, domain);
 		break;
 	case AVAHI_BROWSER_ALL_FOR_NOW:
-		printf("\n(Browser) Initial browsing complete. Waiting for new services...\n");
+		if(debug)
+			printf("*D* (Browser) Initial browsing complete. Waiting for new services...\n");
 		break;
 	case AVAHI_BROWSER_CACHE_EXHAUSTED:
-		printf("\n(Browser) Cache exhausted (initial pass complete or error)... Waiting for new services...\n");
+		if(debug)
+			printf("*D* (Browser) Cache exhausted (initial pass complete or error)... Waiting for new services...\n");
 		break;
-#endif
 	}
 }
 
@@ -117,7 +121,7 @@ static void client_callback(AvahiClient *c, AvahiClientState state, AVAHI_GCC_UN
 
 	switch (state) {
 	case AVAHI_CLIENT_S_RUNNING: // Connection established, start service browsing
-		if(!(browser = avahi_service_browser_new(c, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, SERVICE_TYPE, "local", 0, browse_callback, c))){ // Create a new service browser instance
+		if(!(browser = avahi_service_browser_new(c, AVAHI_IF_UNSPEC, avahiIP, SERVICE_TYPE, "local", 0, browse_callback, c))){ // Create a new service browser instance
 			fprintf(stderr, "*E* Failed to create service browser: %s\n", avahi_strerror(avahi_client_errno(c)));
 			avahi_simple_poll_quit(simple_poll);
 		}
