@@ -113,6 +113,24 @@ static void func_status(const char *){
 	);
 }
 
+static void func_history(const char *arg){
+	if(arg)
+		fputs("*E* Argument is ignored\n", stderr);
+
+	HISTORY_STATE *my_history_state = history_get_history_state();
+	HIST_ENTRY *hist_entry;
+
+	if(!my_history_state || !my_history_state->entries){
+		puts("*I* The history is empty");
+		return;
+	}
+
+	for(int i = 0; i < my_history_state->length; ++i)
+		printf("\t%s\n", my_history_state->entries[i]->line);
+
+	history_set_history_state(my_history_state);
+}
+
 static void func_verbose(const char *arg){
 	if(arg){
 		if(!strcmp(arg, "on"))
@@ -151,6 +169,7 @@ struct _commands {
 	{ "scan", func_scan, "Look for Tahoma's ZeroConf advertising" },
 	{ "status", func_status, "Display current connection informations" },
 	{ "save", func_save, "<file> save current configuration to the given file" },
+	{ "history", func_history, "List command line history" },
 	{ "verbose", func_verbose, "[on|off|] Be verbose" },
 	{ "trace", func_trace, "[on|off|] Trace every commands" },
 	{ "?", func_qmark, "List available commands" },
@@ -310,8 +329,11 @@ int main(int ac, char **av){
 		char *line;
 		for(line = l; *line && !isgraph(*line); ++line);	// Strip spaces
 
-		if(*line)	// Ignore empty line
+		if(*line){	// Ignore empty line
 			execline(line);
+			if(isatty(fileno(stdin)))
+				add_history(line);
+		}
 
 		free(l);
 	}
