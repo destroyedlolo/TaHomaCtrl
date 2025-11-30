@@ -4,6 +4,8 @@
 #include "TaHomaCtl.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include <avahi-client/client.h>
@@ -21,6 +23,18 @@ static AvahiSimplePoll *simple_poll = NULL;
 static AvahiServiceBrowser *browser = NULL;
 
 /**
+ * @brief Set a setting after clearing it if needed
+ * @details Settings are dynamically allocated
+ */
+static void store(char **s, const char *v){
+	if(*s)	// Already feed
+		free(*s);
+
+	*s = strdup(v);
+	assert(*s);
+}
+
+/**
  * @brief Service Resolver Callback.
  * @details Called when detailed service information (address, port) is available.
  */
@@ -34,7 +48,7 @@ static void resolve_callback(
 	const char *domain,
 	const char *host_name,
 	const AvahiAddress *address,
-	uint16_t port,
+	uint16_t aport,
 	AvahiStringList *txt,
 	AvahiLookupResultFlags flags,
 	void *userdata)
@@ -53,8 +67,11 @@ static void resolve_callback(
 			if(verbose){
 				printf("*I* Service '%s' found and resolved:\n", name);
 				printf("*I*\tType: %s, Domain: %s\n", type, domain);
-				printf("*I*\tHost: '%s', Address: '%s', Port: %u\n", host_name, a, port);
+				printf("*I*\tHost: '%s', Address: '%s', Port: %u\n", host_name, a, aport);
 			}
+			store(&tahoma, host_name);
+			store(&ip, a);
+			port = aport;
 
 			if(simple_poll)
 				avahi_simple_poll_quit(simple_poll);
