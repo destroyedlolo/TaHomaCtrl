@@ -95,7 +95,7 @@ static void func_save(const char *arg){
 		fprintf(f, "TaHoma_port %u\n", port);
 
 	if(token)
-		fprintf(f, "TaHoma_port %s\n", token);
+		fprintf(f, "token %s\n", token);
 
 	fclose(f);
 }
@@ -118,7 +118,6 @@ static void func_history(const char *arg){
 		fputs("*E* Argument is ignored\n", stderr);
 
 	HISTORY_STATE *my_history_state = history_get_history_state();
-	HIST_ENTRY *hist_entry;
 
 	if(!my_history_state || !my_history_state->entries){
 		puts("*I* The history is empty");
