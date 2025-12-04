@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <pwd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -31,6 +32,9 @@ size_t url_len;
 bool verbose = false;
 bool trace = false;
 bool debug = false;
+
+static const char *ascript = NULL;	/* User script to launch (from launch parameters) */
+static bool nostartup = false;	/* Do not source .tahomactl */
 
 	/* **
 	 * Utilities
@@ -64,12 +68,12 @@ static const char *affval(const char *v){
 	 * Commands interpreter
 	 * ***/
 
-static void execscript(const char *);
+static void execscript(const char *, bool);
 static void func_qmark(const char *);
 
 static void func_script(const char *arg){
 	if(arg)
-		execscript(arg);
+		execscript(arg, false);
 	else
 		fputs("*E* Expecting a filename.\n", stderr);
 }
@@ -245,11 +249,15 @@ static void execline(char *l){
 		exec(l, NULL);
 }
 
-void execscript(const char *name){
+void execscript(const char *name, bool dontfail){
 	FILE *f = fopen(name, "r");
 	if(!f){
-		perror(name);
-		exit(EXIT_FAILURE);
+		if(dontfail)
+			return;
+		else {
+			perror(name);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	char *l = NULL;
@@ -300,10 +308,13 @@ char **command_completion(const char *text, int start, int end){
 int main(int ac, char **av){
 	int opt;
 
-	while( (opt = getopt(ac, av, ":+hH:p:k:f:dvt46")) != -1){
+	while( (opt = getopt(ac, av, ":+NhH:p:k:f:dvt46")) != -1){
 		switch(opt){
 		case 'f':
-			execscript(optarg);
+			ascript = optarg;
+			break;
+		case 'N':
+			nostartup = true;
 			break;
 		case '4':
 			avahiIP = AVAHI_PROTO_INET;
@@ -334,13 +345,17 @@ int main(int ac, char **av){
 				"TaHomaCrl v" VERSION "\n"
 				"\tControl your TaHoma box from a command line.\n"
 				"(c) L.Faillie (destroyedlolo) 2025\n"
-				"\nKnown options :\n"
+				"\nScripting :\n"
 				"\t-f : source provided script\n"
+				"\t-N : don't execute ~/.tahomactrl at startup\n"
+				"\nTaHoma's :\n"
 				"\t-H : set TaHoma's hostname\n"
 				"\t-p : set TaHoma's port\n"
 				"\t-k : set bearer token\n"
+				"\nLimiting scanning :\n"
 				"\t-4 : resolve Avahi advertisement in IPv4 only\n"
 				"\t-6 : resolve Avahi advertisement in IPv6 only\n"
+				"\nMisc :\n"
 				"\t-v : add verbosity\n"
 				"\t-t : add tracing\n"
 				"\t-d : add some debugging messages\n"
@@ -350,6 +365,17 @@ int main(int ac, char **av){
 		}
 	}
 
+	if(!nostartup){
+		struct passwd *pw = getpwuid(getuid());	/* Find user's info */
+		if(!pw)
+			fputs("*E* Can't read user's info\n", stderr);
+		else {
+			char t[strlen(pw->pw_dir) + 13];	/* "/.tahomactrl" */
+			sprintf(t, "%s/.tahomactrl", pw->pw_dir);
+			execscript(t, false);
+		}
+	}
+	
 		/* Command line handling */
 	rl_attempted_completion_function = command_completion;
 	for(;;){
