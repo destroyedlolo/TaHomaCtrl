@@ -73,14 +73,14 @@ void buildURL(void){
 		url = NULL;
 	}
 
-	url_len = strlen("https://::/enduser-mobile-web/1/enduserAPI/");
+	url_len = strlen("https://:/enduser-mobile-web/1/enduserAPI/");
 	url_len += strlen(tahoma);
 	url_len += 5; /* port: 65535 */
-	url_len += strlen(ip);
 
 	url = malloc(url_len + 1);
 	assert(url);
 
+	sprintf(url, "https://%s:%u/enduser-mobile-web/1/enduserAPI/", tahoma, port);
 	if(debug)
 		printf("*D* url: '%s'\n", url);
 }
