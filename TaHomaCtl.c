@@ -29,6 +29,7 @@ char *tahoma = NULL;
 char *ip = NULL;
 uint16_t port = 0;
 char *token = NULL;
+bool unsafe = false;
 
 char *url = NULL;
 size_t url_len;
@@ -145,11 +146,13 @@ static void func_status(const char *){
 		"\tTahoma's host : %s\n"
 		"\tTahoma's IP : %s\n"
 		"\tTahoma's port : %u\n"
-		"\tToken : %s\n",
+		"\tToken : %s\n"
+		"\tSSL chaine : %s\n",
 		affval(tahoma),
 		affval(ip),
 		port,
-		token ? "set": "unset"
+		token ? "set": "unset",
+		unsafe ? "not checked (unsafe)" : "Enforced"
 	);
 }
 
@@ -332,7 +335,7 @@ char **command_completion(const char *text, int start, int end){
 int main(int ac, char **av){
 	int opt;
 
-	while( (opt = getopt(ac, av, ":+NhH:p:k:f:dvt46")) != -1){
+	while( (opt = getopt(ac, av, ":+NhH:p:Uk:f:dvt46")) != -1){
 		switch(opt){
 		case 'f':
 			ascript = optarg;
@@ -351,6 +354,9 @@ int main(int ac, char **av){
 			break;
 		case 'p':
 			port = (uint16_t)atoi(optarg);	// Quick and dirty but harmless
+			break;
+		case 'U':
+			unsafe = true;
 			break;
 		case 'd':
 			debug = true;
@@ -376,6 +382,7 @@ int main(int ac, char **av){
 				"\t-H : set TaHoma's hostname\n"
 				"\t-p : set TaHoma's port\n"
 				"\t-k : set bearer token\n"
+				"\t-U : don't verify SSL chaine (unsafe mode)\n"
 				"\nLimiting scanning :\n"
 				"\t-4 : resolve Avahi advertisement in IPv4 only\n"
 				"\t-6 : resolve Avahi advertisement in IPv6 only\n"
@@ -408,8 +415,13 @@ int main(int ac, char **av){
 		exit(EXIT_FAILURE);
 	}
 
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);	/* Don't verify SSL */
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+	if(unsafe){
+		if(debug || verbose)
+			puts("*W* SSL chaine not enforced (unsafe mode)");
+
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);	/* Don't verify SSL */
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+	}
 
 		/* Command line handling */
 	rl_attempted_completion_function = command_completion;
