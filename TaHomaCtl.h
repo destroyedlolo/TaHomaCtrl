@@ -18,7 +18,8 @@
 extern char *tahoma;	/* Tahoma's hostname */
 extern char *ip;		/* Tahoma's IP address */
 extern uint16_t port;	/* TaHoma's port */
-extern char *token;	/* Bearer Token */
+extern char *token;		/* Bearer Token */
+extern bool unsafe;		/* Don't verify SSL chaine */
 
 extern char *url;	/* base API url */
 extern size_t url_len;	/* URL's length */

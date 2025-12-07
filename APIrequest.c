@@ -8,12 +8,14 @@
 #include <string.h>
 
 CURL *curl = NULL;
-static struct curl_slist *global_resolve_list = NULL;
+static struct curl_slist *global_resolve_list = NULL;	/* forced resolver */
+static struct curl_slist *global_headers = NULL;				/* Headers */
 
 void curl_cleanup(void){
 		/* internally protected against NULL pointer */
-	curl_slist_free_all(global_resolve_list);
 	curl_easy_cleanup(curl);	
+	curl_slist_free_all(global_resolve_list);
+	curl_slist_free_all(global_headers);
 	curl_global_cleanup();
 }
 
@@ -55,6 +57,27 @@ void buildURL(void){
 	}
 
 	curl_easy_setopt(curl, CURLOPT_RESOLVE, global_resolve_list);
+
+		/* Authorization header string */
+	if(global_headers){
+		curl_slist_free_all(global_headers);
+		global_headers = NULL;
+	}
+	
+	char auth_header[strlen("Authorization: Bearer ") + strlen(token) + 1];
+	strcpy(auth_header, "Authorization: Bearer ");
+	strcat(auth_header, token);
+
+	if(debug)
+		printf("*D* Auth header : '%s'\n", auth_header);
+	
+	if(!(global_headers = curl_slist_append(NULL, token))){
+		fputs("*E* Failed to set header", stderr);
+		return;
+	}
+	
+	/* Other headers if needed */
+	global_headers = curl_slist_append(global_headers, "Content-Type: application/json");	
+
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, global_headers);
 }
-
-
