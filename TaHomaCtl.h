@@ -34,6 +34,7 @@ extern bool verbose;
 extern CURL *curl;
 extern void curl_cleanup(void);
 extern void buildURL(void);
+extern void callAPI(const char *);
 
 	/* Utilities */
 extern const char *FreeAndSet(char **storage, const char *val);

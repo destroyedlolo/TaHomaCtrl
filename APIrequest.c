@@ -30,13 +30,15 @@ void buildURL(void){
 	}
 
 	url_len = strlen("https://:/enduser-mobile-web/1/enduserAPI/");
-	url_len += strlen(tahoma);
+	url_len += strlen(ip);
 	url_len += 5; /* port: 65535 */
 
 	url = malloc(url_len + 1);
 	assert(url);
 
-	sprintf(url, "https://%s:%u/enduser-mobile-web/1/enduserAPI/", tahoma, port);
+	sprintf(url, "https://%s:%u/enduser-mobile-web/1/enduserAPI/", ip, port);
+	url_len = strlen(url);	/* Because the port length is unknown */
+
 	if(debug)
 		printf("*D* url: '%s'\n", url);
 
@@ -76,8 +78,35 @@ void buildURL(void){
 		return;
 	}
 	
-	/* Other headers if needed */
-	global_headers = curl_slist_append(global_headers, "Content-Type: application/json");	
+	char host_header[strlen("Host: ") + strlen(tahoma) + 5 + 2]; /* Host: host:port + null */
+	sprintf(host_header, "Host: %s:%u", tahoma, port);
+
+	if(debug)
+		printf("*D* Host header : '%s'\n", host_header);
+	
+	global_headers = curl_slist_append(global_headers, "Content-Type: application/json");
+	global_headers = curl_slist_append(global_headers, host_header);
 
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, global_headers);
+}
+
+void callAPI(const char *api){
+	char full_url[url_len + strlen(api) + 1];
+	strcpy(full_url, url);
+	strcpy(full_url + url_len, api);
+
+	if(debug)
+		printf("*D* calling '%s'\n", full_url);
+
+	curl_easy_setopt(curl, CURLOPT_URL, url);
+	curl_easy_perform(curl);
+
+	int res = curl_easy_perform(curl);
+	if(res != CURLE_OK)
+		fprintf(stderr, "*E* Calling error : %s\n", curl_easy_strerror(res));
+	else if(verbose || debug){
+		long http_code = 0;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		printf("*I* HTTP return code : %ld\n", http_code);
+	}
 }

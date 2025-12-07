@@ -201,6 +201,10 @@ static void func_quit(const char *){
 	exit(EXIT_SUCCESS);
 }
 
+static void func_Tgw(const char *){
+	callAPI("setup/gateways");
+}
+
 struct _commands {
 	const char *name;			// Command's name
 	void(*func)(const char *);	// executor
@@ -221,6 +225,9 @@ struct _commands {
 	{ NULL, NULL, "Verbosity"},
 	{ "verbose", func_verbose, "[on|off|] Be verbose" },
 	{ "trace", func_trace, "[on|off|] Trace every commands" },
+
+	{ NULL, NULL, "Interacting"},
+	{ "tGateway", func_Tgw, "Query your gateway own configuration" },
 
 	{ NULL, NULL, "Miscs"},
 	{ "#", NULL, "Comment, ignored line" },
