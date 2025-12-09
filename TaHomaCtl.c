@@ -403,17 +403,6 @@ int main(int ac, char **av){
 		}
 	}
 
-	if(!nostartup){
-		struct passwd *pw = getpwuid(getuid());	/* Find user's info */
-		if(!pw)
-			fputs("*E* Can't read user's info\n", stderr);
-		else {
-			char t[strlen(pw->pw_dir) + 13];	/* "/.tahomactrl" */
-			sprintf(t, "%s/.tahomactrl", pw->pw_dir);
-			execscript(t, true);
-		}
-	}
-	
 		/* libCURL's */
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	atexit(curl_cleanup);
@@ -430,6 +419,17 @@ int main(int ac, char **av){
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 	}
 
+	if(!nostartup){
+		struct passwd *pw = getpwuid(getuid());	/* Find user's info */
+		if(!pw)
+			fputs("*E* Can't read user's info\n", stderr);
+		else {
+			char t[strlen(pw->pw_dir) + 13];	/* "/.tahomactrl" */
+			sprintf(t, "%s/.tahomactrl", pw->pw_dir);
+			execscript(t, true);
+		}
+	}
+	
 		/* Command line handling */
 	rl_attempted_completion_function = command_completion;
 	for(;;){
