@@ -96,6 +96,11 @@ void buildURL(void){
 }
 
 void callAPI(const char *api){
+	if(!tahoma || !ip || !port || !token){
+		fputs("*E* missing connection information to run the request.\n", stderr);
+		return;
+	}
+	
 	char full_url[url_len + strlen(api) + 1];
 	strcpy(full_url, url);
 	strcpy(full_url + url_len, api);

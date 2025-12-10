@@ -168,6 +168,11 @@ void func_scan(const char *){
 		/* Wait for events */
 	avahi_simple_poll_loop(simple_poll);
 
+		/* The TaHoma may have been discovered : trying
+		 * to build connection informations
+		 */
+	buildURL();
+
 cleanup:
 		/* Cleanup things */
 	if (sb)
