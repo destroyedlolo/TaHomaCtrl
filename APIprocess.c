@@ -38,6 +38,32 @@ const char *getObjString(struct json_object *parent, const char *path[]){
 	return NULL;
 }
 
+int getObjInt(struct json_object *parent, const char *path[]){
+	struct json_object *obj = getObj(parent, path);
+	if(!obj)
+		return 0;
+
+	if(json_object_is_type(obj, json_type_int))
+		return json_object_get_int(obj);
+	else if(debug)
+		fputs("*E* Not an integer\n", stderr);
+
+	return 0;
+}
+
+bool getObjBool(struct json_object *parent, const char *path[]){
+	struct json_object *obj = getObj(parent, path);
+	if(!obj)
+		return false;
+
+	if(json_object_is_type(obj, json_type_boolean))
+		return json_object_get_boolean(obj);
+	else if(debug)
+		fputs("*E* Not a boolean\n", stderr);
+
+	return false;
+}
+
 static const char *affString(const char *v){
 	if(v)
 		return v;
@@ -94,7 +120,7 @@ void func_Devs(const char *){
 				struct json_object *obj = json_object_array_get_idx(res, idx);
 
 				if(obj){
-					printf("Label : %s [%s]\n", 
+					printf("%s [%s]\n", 
 						affString(getObjString(obj, OBJPATH( "label", NULL ) )),
 						affString(getObjString(obj, OBJPATH( "controllableName", NULL ) ))
 					);
@@ -103,8 +129,14 @@ void func_Devs(const char *){
 						affString(getObjString(obj, OBJPATH( "deviceURL", NULL ) ))
 					);
 
-					printf("\tType : %s\n", 
-						affString(getObjString(obj, OBJPATH( "type", NULL ) ))
+					printf("\tType : %d, subsystemId : %d\n", 
+						getObjInt(obj, OBJPATH( "type", NULL ) ),
+						getObjInt(obj, OBJPATH( "subsystemId", NULL ) )
+					);
+
+					printf("\t%ssynced, %senabled\n",
+						getObjBool(obj, OBJPATH( "synced", NULL ) ) ? "":"Not ",
+						getObjBool(obj, OBJPATH( "enabled", NULL ) ) ? "":"Not "
 					);
 				} else
 					fprintf(stderr, "*E* Can't get %ld\n", idx);

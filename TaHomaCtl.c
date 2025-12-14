@@ -73,7 +73,7 @@ void spent(bool ending){
 		return;
 	}
 
-	if((debug || verbose) && ending){
+	if((debug) && ending){
 		unsigned long d = timespec_to_ms(&end) - timespec_to_ms(&beg);
 		printf("*D* Time spent : %0.3f\n", (double)d / 1000.0);
 	}
