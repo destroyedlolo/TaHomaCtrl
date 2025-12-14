@@ -7,7 +7,7 @@
 
 #define OBJPATH(...) (const char*[]){ __VA_ARGS__ }
 
-const char *getObjString(struct json_object *parent, const char *path[]){
+struct json_object *getObj(struct json_object *parent, const char *path[]){
 	struct json_object *obj = parent;
 
 	for(int i=0; path[i]; ++i){
@@ -21,6 +21,14 @@ const char *getObjString(struct json_object *parent, const char *path[]){
 		}
 		obj = json_object_object_get(obj, path[i]);
 	}
+
+	return obj;
+}
+
+const char *getObjString(struct json_object *parent, const char *path[]){
+	struct json_object *obj = getObj(parent, path);
+	if(!obj)
+		return NULL;
 
 	if(json_object_is_type(obj, json_type_string))
 		return json_object_get_string(obj);
