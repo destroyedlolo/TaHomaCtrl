@@ -134,10 +134,16 @@ void func_Devs(const char *){
 						getObjInt(obj, OBJPATH( "subsystemId", NULL ) )
 					);
 
-					printf("\t%ssynced, %senabled\n",
+					printf("\t%ssynced, %senabled, %savailable\n",
 						getObjBool(obj, OBJPATH( "synced", NULL ) ) ? "":"Not ",
-						getObjBool(obj, OBJPATH( "enabled", NULL ) ) ? "":"Not "
+						getObjBool(obj, OBJPATH( "enabled", NULL ) ) ? "":"Not ",
+						getObjBool(obj, OBJPATH( "available", NULL ) ) ? "":"Not "
 					);
+
+					printf("\t\tType: %s\n",
+						affString(getObjString(obj, OBJPATH( "definition", "type", NULL ) ))
+					);
+						
 				} else
 					fprintf(stderr, "*E* Can't get %ld\n", idx);
 			}
