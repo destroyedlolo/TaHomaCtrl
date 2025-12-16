@@ -1,4 +1,16 @@
-# Example of TaHomaCtl script file.
-# Typical use case is to set the configuration
+# This is an example of TaHomaCtl's configuration file.
+#
+# You need to feed it as per your own setup.
+# Then copy it as ~/.tahomactrl
 
-verbose
+# Enable verbosity
+
+# verbose on
+# trace on
+
+# Communication with the TaHoma
+
+TaHoma_host gateway-xxxx-xxxx-xxxx.local
+TaHoma_address 192.xxx.xxx.xxx
+TaHoma_port 8443
+TaHoma_token xxxxxxxxxxxxxxxxxxxx
