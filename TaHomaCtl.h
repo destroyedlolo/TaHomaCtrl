@@ -34,10 +34,11 @@ extern bool verbose;
 	/* Utilities */
 extern const char *FreeAndSet(char **storage, const char *val);
 extern void spent(bool);	/* Caution, not reentrant */
+extern char *nextArg(char *);	/* Point to the next argument*/
 
 	/* Configuration related */
 extern void clean(char **);		// Clean a configuration reference
-extern void func_scan(const char *);
+extern void func_scan(char *);
 
 	/* Response handling */
 struct ResponseBuffer {
@@ -54,8 +55,9 @@ extern void buildURL(void);
 extern void callAPI(const char *, struct ResponseBuffer *);
 
 	/* Response processing */
-void func_Tgw(const char *);
-void func_Devs(const char *);
+void func_Tgw(char *);
+void func_Devs(char *);
+void func_States(char *);
 
 	/* Devices' */
 struct Command {

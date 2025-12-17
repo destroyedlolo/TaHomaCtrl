@@ -99,7 +99,7 @@ static void freeDeviceList(void){
 	devices_list = NULL;
 }
 
-void addDevice(struct json_object *obj){
+static void addDevice(struct json_object *obj){
 	const char *t = getObjString(obj, OBJPATH( "definition", "type", NULL ));
 	if(!t || !strcmp(t, "PROTOCOL_GATEWAY"))
 		return;
@@ -168,11 +168,25 @@ void addDevice(struct json_object *obj){
 	devices_list = dev;
 }
 
+static struct Device *findDevice(const char *name){
+	for(struct Device *r = devices_list; r; r = r->next){
+		if(!strcmp(r->label, name))
+			return r;
+	}
+
+	return NULL;
+}
+
 	/*
 	 * User commands
 	 */
 
-void func_Tgw(const char *){
+void func_Tgw(char *arg){
+	if(arg){
+		fputs("*E* Gateway doesn't expect an argument.\n", stderr);
+		return;
+	}
+
 	struct ResponseBuffer buff = {NULL};
 
 	callAPI("setup/gateways", &buff);
@@ -227,7 +241,12 @@ static void printDeviceInfo(struct json_object *obj){
 	);
 }
 
-void func_Devs(const char *){
+void func_Devs(char *arg){
+	if(arg){
+		fputs("*E* Devices doesn't expect an argument.\n", stderr);
+		return;
+	}
+
 	struct ResponseBuffer buff = {NULL};
 
 	callAPI("setup/devices", &buff);
@@ -261,4 +280,23 @@ void func_Devs(const char *){
 		json_object_put(res);
 	}
 	freeResponse(&buff);
+}
+
+void func_States(char *arg){
+	if(!arg){
+		fputs("*E* States is expecting a device's name.\n", stderr);
+		return;
+	}
+
+	nextArg(arg);	/* Remove potential trailing space */
+
+	struct Device *dev = findDevice(arg);
+	if(!dev)
+		fputs("*E* Device not found.\n", stderr);
+
+	char url[ strlen("setup/devices//states") + strlen(dev->url) +1];
+	sprintf(url, "setup/devices/%s/states", dev->url);
+
+	if(debug)
+		printf("*D* Url: '%s'\n", url);
 }

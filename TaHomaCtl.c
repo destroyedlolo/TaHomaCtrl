@@ -60,6 +60,18 @@ void clean(char **obj){
 	}
 }
 
+char *nextArg(char *arg){
+	char *p = strchr(arg, ' ');
+	if(!p)
+		return NULL;
+
+	*(p++) = 0;	/* end current argument */
+	if(*p)
+		return p;
+	else
+		return NULL;
+}
+
 static unsigned long timespec_to_ms(const struct timespec *ts){
 	return((unsigned long)ts->tv_sec * 1000) + (ts->tv_nsec / 1000000L);
 }
@@ -91,16 +103,16 @@ static const char *affval(const char *v){
 	 * ***/
 
 static void execscript(const char *, bool);
-static void func_qmark(const char *);
+static void func_qmark(char *);
 
-static void func_script(const char *arg){
+static void func_script(char *arg){
 	if(arg)
 		execscript(arg, false);
 	else
 		fputs("*E* Expecting a filename.\n", stderr);
 }
 
-static void func_token(const char *arg){
+static void func_token(char *arg){
 	if(arg){
 		FreeAndSet(&token, arg);
 		buildURL();
@@ -108,7 +120,7 @@ static void func_token(const char *arg){
 		printf("*I* Token : %s\n", affval(token));
 }
 
-static void func_THost(const char *arg){
+static void func_THost(char *arg){
 	if(arg){
 		FreeAndSet(&tahoma, arg);
 		buildURL();
@@ -116,7 +128,7 @@ static void func_THost(const char *arg){
 		printf("*I* Tahoma's host : %s\n", affval(tahoma));
 }
 
-static void func_TAddr(const char *arg){
+static void func_TAddr(char *arg){
 	if(arg){
 		FreeAndSet(&ip, arg);
 		buildURL();
@@ -124,7 +136,7 @@ static void func_TAddr(const char *arg){
 		printf("*I* Tahoma's IP address : %s\n", affval(ip));
 }
 
-static void func_TPort(const char *arg){
+static void func_TPort(char *arg){
 	if(arg){
 		port = (uint16_t)atoi(arg);
 		buildURL();
@@ -132,7 +144,7 @@ static void func_TPort(const char *arg){
 		printf("*I* Tahoma's port : %u\n", port);
 }
 
-static void func_save(const char *arg){
+static void func_save(char *arg){
 	if(!arg){
 		fputs("*E* file name expected\n", stderr);
 		return;
@@ -159,7 +171,7 @@ static void func_save(const char *arg){
 	fclose(f);
 }
 
-static void func_status(const char *){
+static void func_status(char *){
 	printf("*I* Connection :\n"
 		"\tTahoma's host : %s\n"
 		"\tTahoma's IP : %s\n"
@@ -183,7 +195,7 @@ static void func_status(const char *){
 	}
 }
 
-static void func_history(const char *arg){
+static void func_history(char *arg){
 	if(arg)
 		fputs("*E* Argument is ignored\n", stderr);
 
@@ -200,7 +212,7 @@ static void func_history(const char *arg){
 	history_set_history_state(my_history_state);
 }
 
-static void func_verbose(const char *arg){
+static void func_verbose(char *arg){
 	if(arg){
 		if(!strcmp(arg, "on"))
 			verbose = true;
@@ -212,7 +224,7 @@ static void func_verbose(const char *arg){
 		puts(verbose ? "I'm verbose" : "I'm quiet");
 }
 
-static void func_trace(const char *arg){
+static void func_trace(char *arg){
 	if(arg){
 		if(!strcmp(arg, "on"))
 			trace = true;
@@ -224,7 +236,7 @@ static void func_trace(const char *arg){
 		puts(trace ? "Traces enabled" : "Traces disabled");
 }
 
-static void func_timeout(const char *arg){
+static void func_timeout(char *arg){
 	if(arg){
 		timeout = atol(arg);
 
@@ -234,13 +246,13 @@ static void func_timeout(const char *arg){
 		fputs("timeout is execting the number of seconds to wait.\n", stderr);
 }
 
-static void func_quit(const char *){
+static void func_quit(char *){
 	exit(EXIT_SUCCESS);
 }
 
 struct _commands {
 	const char *name;			// Command's name
-	void(*func)(const char *);	// executor
+	void(*func)(char *);	// executor
 	const char *help;			// Help message
 } Commands[] = {
 	{ NULL, NULL, "TaHoma's Configuration"},
@@ -263,6 +275,7 @@ struct _commands {
 	{ NULL, NULL, "Interacting"},
 	{ "Gateway", func_Tgw, "Query your gateway own configuration" },
 	{ "Devices", func_Devs, "Query and store attached devices" },
+	{ "States", func_States, "<device name> query the states of a device" },
 
 	{ NULL, NULL, "Miscs"},
 	{ "#", NULL, "Comment, ignored line" },
@@ -272,7 +285,7 @@ struct _commands {
 	{ NULL, NULL, NULL }
 };
 
-static void func_qmark(const char *){
+static void func_qmark(char *){
 	puts("List of known commands\n"
 		 "======================");
 
@@ -288,7 +301,7 @@ static void func_qmark(const char *){
 	}
 }
 
-static void exec(const char *cmd, const char *arg){
+static void exec(const char *cmd, char *arg){
 	if(trace && *cmd != '#')
 		printf("> %s\n", cmd);
 
