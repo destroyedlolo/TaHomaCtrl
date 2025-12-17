@@ -342,7 +342,7 @@ void execscript(const char *name, bool dontfail){
 	fclose(f);
 }
 
-char *command_generator(const char *text, int state) {
+char *command_generator(const char *text, int state){
     static int list_index, len;
     const char *name;
 
@@ -363,10 +363,34 @@ char *command_generator(const char *text, int state) {
     return ((char *)NULL);
 }
 
+char *dev_generator(const char *text, int state){
+	static struct Device *dev;
+	static int len;
+
+	if(!state){
+		dev = devices_list;
+		len = strlen(text);
+	}
+
+	while(dev){
+		struct Device *cur = dev;
+		dev = dev->next;
+
+		if(!strncmp(cur->label, text, len))
+			return(strdup(cur->label));
+	}
+
+    return ((char *)NULL);
+}
+
 char **command_completion(const char *text, int start, int end){
 	rl_attempted_completion_over = 1;
 	if(!start)
         return rl_completion_matches(text, command_generator);
+
+	if(!strncmp(rl_line_buffer, "States", 6))
+		return rl_completion_matches(text, dev_generator);
+
     return ((char **)NULL);
 }
 
