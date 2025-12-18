@@ -248,7 +248,6 @@ void func_Devs(char *arg){
 	}
 
 	struct ResponseBuffer buff = {NULL};
-
 	callAPI("setup/devices", &buff);
 	if(debug)
 		printf("*D* Resp: '%s'\n", buff.memory ? buff.memory : "NULL data");
@@ -294,9 +293,32 @@ void func_States(char *arg){
 	if(!dev)
 		fputs("*E* Device not found.\n", stderr);
 
-	char url[ strlen("setup/devices//states") + strlen(dev->url) +1];
-	sprintf(url, "setup/devices/%s/states", dev->url);
+	char *enc = curl_easy_escape(curl, dev->url, 0);
+	assert(enc);
+	char url[ strlen("setup/devices//states") + strlen(enc) +1];
+	sprintf(url, "setup/devices/%s/states", enc);
+	curl_free(enc);
 
 	if(debug)
 		printf("*D* Url: '%s'\n", url);
+
+	struct ResponseBuffer buff = {NULL};
+	callAPI(url, &buff);
+	if(debug)
+		printf("*D* Resp: '%s'\n", buff.memory ? buff.memory : "NULL data");
+
+		/* Process result */
+	if(buff.memory){
+		struct json_object *res= json_tokener_parse(buff.memory);
+
+		if(json_object_is_type(res, json_type_array)){	/* 1st object is an array */
+			size_t nbr = json_object_array_length(res);
+			if(debug)
+				printf("*I* %ld states\n", nbr);
+			for(size_t idx=0; idx < nbr; ++idx){
+				struct json_object *obj = json_object_array_get_idx(res, idx);
+			}
+		} else
+			fputs("*E* Returned object is not an array", stderr);
+	}
 }
