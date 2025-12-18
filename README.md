@@ -1,2 +1,2 @@
-# TaHomaCtrl
+# TaHomaCtl
 CLI TaHoma control command

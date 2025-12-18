@@ -1,4 +1,4 @@
-/* TaHomaCtrl
+/* TaHomaCtl
  *
  * CLI tool to control your TaHoma
  *
@@ -37,7 +37,7 @@ bool trace = false;
 bool debug = false;
 
 static const char *ascript = NULL;	/* User script to launch (from launch parameters) */
-static bool nostartup = false;	/* Do not source .tahomactrl */
+static bool nostartup = false;	/* Do not source .tahomactl */
 
 	/* **
 	 * Utilities
@@ -456,7 +456,7 @@ int main(int ac, char **av){
 				"(c) L.Faillie (destroyedlolo) 2025\n"
 				"\nScripting :\n"
 				"\t-f : source provided script\n"
-				"\t-N : don't execute ~/.tahomactrl at startup\n"
+				"\t-N : don't execute ~/.tahomactl at startup\n"
 				"\nTaHoma's :\n"
 				"\t-H : set TaHoma's hostname\n"
 				"\t-p : set TaHoma's port\n"
@@ -496,8 +496,8 @@ int main(int ac, char **av){
 		if(!pw)
 			fputs("*E* Can't read user's info\n", stderr);
 		else {
-			char t[strlen(pw->pw_dir) + 13];	/* "/.tahomactrl" */
-			sprintf(t, "%s/.tahomactrl", pw->pw_dir);
+			char t[strlen(pw->pw_dir) + 12];	/* "/.tahomactl" */
+			sprintf(t, "%s/.tahomactl", pw->pw_dir);
 			execscript(t, true);
 		}
 	}
