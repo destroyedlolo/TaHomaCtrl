@@ -17,6 +17,9 @@ It is ideal for integration into shell scripts, crontabs, or home automation bac
 **TaHomaCtl** is interacting directly with your TaHoma, will not try to interpret results, will not try to secure dangerous actions : it's only an interface to use the Overkiz's public local interface, no more, no less.
 In other words, it has no knowlegde about the devices you're steering.
 
+As dealing directly with your gateway, you can't interact or control stuffs managed at Somfy's cloud side. In other words, you can't interact with Somfy Protect or Cloud2Cloud processes.<br>
+The solution may be to use the Overkiz's "*end user cloud public API*", but my smart homing aims to be as local as possible. Consequently, it's out of the scope of TaHomaCtl.
+
 > [!WARNING]
 > The TaHoma is very slow to respond to some requests at first :
 > - mDNS discovery (see discovery section)
@@ -158,5 +161,58 @@ TaHomaCtl >
 > [!TIP]
 > As said previously, the TaHoma doesn't react in a timely way to mDNS request and doesn't advertise often.<br>
 > The safer way seems to run Avahi's explorator and launch scan when the TaHoma is seen.
+
+#### Discovering your devices
+
+**Devices** will query your box for attached (and internal as well) devices. They will be displayed in *verbose* mode and stored in **TaHomaCtl** for further use.
+
+```
+TaHomaCtl > Devices 
+*I* HTTP return code : 200
+*I* 5 devices
+*I* INTERNAL (wifi/0) [internal:WifiComponent]
+	URL : internal://xxxx-xxxx-xxxx/wifi/0
+	Type : 1, subsystemId : 0
+	synced, enabled, available
+		Type: ACTUATOR
+*I* Boiboite [internal:PodV3Component]
+	URL : internal://xxxx-xxxx-xxxx/pod/0
+	Type : 1, subsystemId : 0
+	synced, enabled, available
+		Type: ACTUATOR
+*I* ZIGBEE (65535) [zigbee:TransceiverV3_0Component]
+	URL : zigbee://xxxx-xxxx-xxxx/65535
+	Type : 5, subsystemId : 0
+	synced, enabled, available
+		Type: PROTOCOL_GATEWAY
+*I* Deco [io:OnOffIOComponent]
+	URL : io://xxxx-xxxx-xxxx/5335270
+	Type : 1, subsystemId : 0
+	synced, enabled, available
+		Type: ACTUATOR
+*I* IO (10069463) [io:StackComponent]
+	URL : io://xxxx-xxxx-xxxx/10069463
+	Type : 5, subsystemId : 0
+	synced, enabled, available
+		Type: PROTOCOL_GATEWAY
+```
+> [!CAUTION]
+> This request is very resource-intensive for TaHoma, especially if you have many connected devices.
+> It is therefore advisable to use it as infrequently as possible, generally only once at startup.
+
+#### Querying a device
+
+```
+TaHomaCtl > States Deco 
+	core:StatusState : "available"
+	core:CommandLockLevelsState : [Array]
+	core:DiscreteRSSILevelState : "normal"
+	core:RSSILevelState : "54"
+	core:OnOffState : "off"
+	core:PriorityLockTimerState : "0"
+	io:PriorityLockOriginatorState : "unknown"
+	core:NameState : "Deco"
+```
+
 
 like [Majordome](https://github.com/destroyedlolo/Majordome).
