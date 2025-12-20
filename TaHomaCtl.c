@@ -514,9 +514,10 @@ int main(int ac, char **av){
 		for(line = l; *line && !isgraph(*line); ++line);	// Strip spaces
 
 		if(*line){	// Ignore empty line
-			execline(line);
 			if(isatty(fileno(stdin)))
 				add_history(line);
+
+			execline(line);
 		}
 
 		free(l);

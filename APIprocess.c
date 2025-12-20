@@ -342,7 +342,7 @@ void func_States(char *arg){
 
 				switch(type){
 				case 1:	/* Number */
-					printf("\"%lf\"\n", getObjNumber(obj, OBJPATH( "value", NULL ) ));
+					printf("%lf\n", getObjNumber(obj, OBJPATH( "value", NULL ) ));
 					break;
 				case 3:	/* String */
 					printf("\"%s\"\n", affString(getObjString(obj, OBJPATH( "value", NULL ) )));
