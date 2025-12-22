@@ -170,7 +170,7 @@ TaHomaCtl >
 
 #### Discovering your devices
 
-**Devices** will query your box for attached (and internal as well) devices. They will be displayed in *verbose* mode and stored in **TaHomaCtl** for further use.
+**Devices** will query your box for attached (and internal as well) devices. They will be displayed if the *verbose* mode is activated and stored in **TaHomaCtl** for further use.
 
 ```
 TaHomaCtl > Devices 
@@ -203,7 +203,7 @@ TaHomaCtl > Devices
 		Type: PROTOCOL_GATEWAY
 ```
 > [!CAUTION]
-> This request is very resource-intensive for TaHoma, especially if you have many connected devices.
+> This request is very resource-intensive for the TaHoma, especially if you have many connected devices.
 > It is therefore advisable to use it as infrequently as possible, generally only once at startup.
 
 #### Querying a device
@@ -233,12 +233,12 @@ My own smart home solution is quite efficient and complete ([Marcel](https://git
 TaHomaCtl was initially made as a Proof of Concept (PoC) before integrating something in Marcel (or as an autonomous daemon).
 
 > [!NOTE]
-> Yes, I'm proudly part of Somfy/Overkiz, but this code doesn't contain any internals : it was built only from publicly available information and my own testing. 
+> Yes, I'm proudly part of Somfy/Overkiz, but this code doesn't contain any internals' and will not to avoid any interest conflict : it was built only from publicly available information and my own testing.<br>
 > No, don't ask me about anything not made public, I'll not reply.
 
 ### Vibe coding testing
 
-TaHomaCtl uses some technologies I hadn't coded before, like mDNS advertising. This small project was a good candidate to test AI companions (ChatGPT and Gemini) and vibe coding. AI generated code, sometime corrected, can be found in TestCodes. The result is quite mixed :
+**TaHomaCtl** uses some technologies I hadn't coded before, like mDNS advertising. This small project was a good candidate to test AI companions (ChatGPT and Gemini) and vibe coding. AI generated code, sometime corrected, can be found in TestCodes. The result is quite mixed :
 
 - mDNS : the outcome is poor, sometime bad ! ChatGPT stays on its own mistakes (non-existent functions, stupid assumptions, wrong strategies, ...). Then I ask Gemini to correct and got some improvements. But, all in all, the result is heavy, not flexible and doesn't suite my quality standard, by far.
 
