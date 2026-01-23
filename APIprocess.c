@@ -304,7 +304,7 @@ void func_States(char *arg){
 		return;
 	}
 
-	nextArg(arg);	/* Remove potential trailing space */
+	char *name = nextArg(arg);	/* Remove potential trailing space and get stat name */
 
 	struct Device *dev = findDevice(arg);
 	if(!dev){
@@ -337,7 +337,12 @@ void func_States(char *arg){
 			for(size_t idx=0; idx < nbr; ++idx){
 				struct json_object *obj = json_object_array_get_idx(res, idx);
 
-				printf("\t%s : ", affString(getObjString(obj, OBJPATH( "name", NULL ))));
+				const char *n = getObjString(obj, OBJPATH( "name", NULL ));
+				if(!n || (name && strcmp(n, name)))	/* Looking for a specific state */
+					continue;
+
+				if(!name)
+					printf("\t%s : ", affString(n));
 				int type = getObjInt(obj, OBJPATH( "type", NULL ));
 
 				switch(type){
