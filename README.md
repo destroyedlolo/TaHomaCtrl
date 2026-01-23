@@ -19,10 +19,10 @@ It is ideal for integration into shell scripts, crontabs, or home automation bac
 
 ## ⚠️ Limitations
 
-**TaHomaCtl** is interacting directly with your TaHoma, will not try to interpret results, will not try to secure dangerous actions : it's only an interface to use the Overkiz's public local interface, no more, no less.
+**TaHomaCtl** is interacting directly with your TaHoma, will not try to interpret results, will not try to secure dangerous actions : it's only an interface to use the Overkiz's public local interface, no more, no less.  
 In other words, it has no knowlegde about the devices you're steering.
 
-As dealing directly with your gateway, you can't interact or control stuffs managed at Somfy's cloud side. In other words, you can't interact with Somfy Protect or Cloud2Cloud processes.<br>
+As dealing directly with your gateway, you can't interact or control stuffs managed at Somfy's cloud side, like Somfy Protect or Cloud2Cloud processes.  
 The solution may be to use the Overkiz's "*end user cloud public API*", but my smart homing aims to be as local as possible. Consequently, it's out of the scope of TaHomaCtl.
 
 > [!WARNING]
@@ -123,7 +123,7 @@ Interacting
 -----------
 'Gateway' : Query your gateway own configuration
 'Devices' : Query and store attached devices
-'States' : <device name> query the states of a device
+'States' : <device name> [State's name] query the states of a device
 
 Miscs
 -----
@@ -218,6 +218,30 @@ TaHomaCtl > States Deco
 	core:PriorityLockTimerState : "0"
 	io:PriorityLockOriginatorState : "unknown"
 	core:NameState : "Deco"
+```
+
+It's also possible to query a single state. In such case, only the value is returned.
+
+```
+$ ./TaHomaCtl -U
+TaHomaCtl > Devices 
+TaHomaCtl > States Deco core:OnOffState
+"off"
+TaHomaCtl > 
+```
+
+> [!NOTE]
+> **Devices** command here is still important to refresh attached devices internal information.  
+> It would be easy by the way to add a command where the device URI is provided instead of name to ride out it.
+
+Intesting in scripts :
+
+``` bash
+$ ./TaHomaCtl -Uf - << eoc
+Devices
+States Deco core:OnOffState
+eoc
+"off"
 ```
 
 > [!IMPORTANT]
