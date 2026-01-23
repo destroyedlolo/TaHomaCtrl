@@ -180,6 +180,65 @@ static void addDevice(struct json_object *obj){
 		dev->commands = ncmd;
 	}
 
+		/* store known states */
+	dev->states = NULL;
+	lstc = getObj(obj, OBJPATH( "definition", "states", NULL ));
+	if(!lstc){
+		fprintf(stderr, "*E* [%s] states field not found.\n", dev->label);
+		for(struct Command *cmd = dev->commands; cmd; ){
+			free((void *)cmd->command);
+			struct Command *old = cmd;
+			cmd = cmd->next;
+			free(old);
+		}
+		freeDevice(dev);
+		free(dev);
+		return;
+	}
+
+	if(!json_object_is_type(lstc, json_type_array)){
+		fprintf(stderr, "*E* [%s] states field not an array.\n", dev->label);
+		for(struct Command *cmd = dev->commands; cmd; ){
+			free((void *)cmd->command);
+			struct Command *old = cmd;
+			cmd = cmd->next;
+			free(old);
+		}
+		freeDevice(dev);
+		free(dev);
+		return;
+	}
+
+	nbr = json_object_array_length(lstc);
+	if(debug)
+		printf("*I* %ld state(s)\n", nbr);
+
+	for(size_t idx=0; idx < nbr; ++idx){
+		struct json_object *state = json_object_array_get_idx(lstc, idx);
+		if(!state){
+			fprintf(stderr, "*E* [%s / %ld] State not found.\n", dev->label, idx);
+			for(struct Command *cmd = dev->commands; cmd; ){
+				free((void *)cmd->command);
+				struct Command *old = cmd;
+				cmd = cmd->next;
+				free(old);
+			}
+			freeDevice(dev);
+			free(dev);
+			return;
+		}
+
+		assert( (t = getObjString(state, OBJPATH( "name", NULL ) )) );
+
+		struct State *nstate = malloc(sizeof(struct State));
+		assert(nstate);
+
+		assert( (nstate->state = strdup(t)) );
+
+		nstate->next = dev->states;
+		dev->states = nstate;
+	}
+
 		/* Add the new device in the list */
 	dev->next = devices_list;
 	devices_list = dev;

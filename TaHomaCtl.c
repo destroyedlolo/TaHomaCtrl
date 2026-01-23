@@ -189,9 +189,13 @@ static void func_status(char *){
 
 	puts("*I* Stored devices :");
 	for(struct Device *dev = devices_list; dev; dev = dev->next){
-		printf("\t%s : %s\n", dev->label, dev->url);
+		printf("%s : %s\n", dev->label, dev->url);
+		puts("\tCommands");
 		for(struct Command *cmd = dev->commands; cmd; cmd = cmd->next)
 			printf("\t\t%s (%d %s)\n", cmd->command, cmd->nparams, cmd->nparams > 1 ? "args": "arg");
+		puts("\tStates");
+		for(struct State *state = dev->states; state; state = state->next)
+			printf("\t\t%s\n", state->state);
 	}
 }
 

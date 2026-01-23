@@ -67,6 +67,12 @@ struct Command {
 	unsigned int nparams;
 };
 
+struct State {
+	struct State *next;
+
+	const char *state;
+};
+
 extern struct Device {
 	struct Device *next;
 
@@ -74,5 +80,6 @@ extern struct Device {
 	const char *url;
 
 	struct Command *commands;
+	struct State *states;
 } *devices_list;
 #endif
