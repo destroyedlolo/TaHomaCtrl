@@ -82,4 +82,6 @@ extern struct Device {
 	struct Command *commands;
 	struct State *states;
 } *devices_list;
+
+extern struct Device *findDevice(const char *);
 #endif

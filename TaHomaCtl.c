@@ -17,7 +17,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define VERSION "0.5"
+#define VERSION "0.6"
 
 	/* **
 	 * Configuration
@@ -187,15 +187,37 @@ static void func_status(char *){
 	if(timeout)
 		printf("\tTimeout : %lds\n", timeout);
 
-	puts("*I* Stored devices :");
-	for(struct Device *dev = devices_list; dev; dev = dev->next){
-		printf("%s : %s\n", dev->label, dev->url);
-		puts("\tCommands");
-		for(struct Command *cmd = dev->commands; cmd; cmd = cmd->next)
-			printf("\t\t%s (%d %s)\n", cmd->command, cmd->nparams, cmd->nparams > 1 ? "args": "arg");
-		puts("\tStates");
-		for(struct State *state = dev->states; state; state = state->next)
-			printf("\t\t%s\n", state->state);
+	unsigned int nbre = 0;
+	for(struct Device *dev = devices_list; dev; dev = dev->next)
+		++nbre;
+
+	printf("*I* %u Stored device%c\n", nbre, nbre > 1 ? 's':' ');
+}
+
+static void device_info(struct Device *dev){
+	puts("\tCommands");
+	for(struct Command *cmd = dev->commands; cmd; cmd = cmd->next)
+		printf("\t\t%s (%d %s)\n", cmd->command, cmd->nparams, cmd->nparams > 1 ? "args": "arg");
+	puts("\tStates");
+	for(struct State *state = dev->states; state; state = state->next)
+		printf("\t\t%s\n", state->state);
+}
+
+static void func_Devs(char *arg){
+	if(!arg){	/* List all devices */
+		for(struct Device *dev = devices_list; dev; dev = dev->next){
+			printf("%s : %s\n", dev->label, dev->url);
+			if(verbose)
+				device_info(dev);
+		}
+	} else {	/* Info of a specific devices */
+		nextArg(arg);
+		struct Device *dev = findDevice(arg);
+		if(dev){
+			printf("%s : %s\n", dev->label, dev->url);
+			device_info(dev);
+		} else
+			printf("*W* Device \"%s\" not found\n", arg);
 	}
 }
 
@@ -279,7 +301,7 @@ struct _commands {
 
 	{ NULL, NULL, "Interacting"},
 	{ "Gateway", func_Tgw, "Query your gateway own configuration" },
-/*	{ "Devices", func_Devs, "" }, */
+	{ "Device", func_Devs, "[name] display device \"name\" information or the devices list" },
 	{ "States", func_States, "<device name> [State's name] query the states of a device" },
 
 	{ NULL, NULL, "Miscs"},

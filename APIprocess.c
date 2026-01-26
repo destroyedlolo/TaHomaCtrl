@@ -244,7 +244,7 @@ static void addDevice(struct json_object *obj){
 	devices_list = dev;
 }
 
-static struct Device *findDevice(const char *name){
+struct Device *findDevice(const char *name){
 	for(struct Device *r = devices_list; r; r = r->next){
 		if(!strcmp(r->label, name))
 			return r;
