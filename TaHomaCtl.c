@@ -265,7 +265,8 @@ struct _commands {
 	{ "TaHoma_port", func_TPort, "[num] set or display TaHoma's port number" },
 	{ "TaHoma_token", func_token, "[value] indicate application token" },
 	{ "timeout", func_timeout, "[value] specify API call timeout (seconds)" },
-	{ "scan", func_scan, "Look for Tahoma's ZeroConf advertising" },
+	{ "scan_TaHoma", func_scan, "Look for Tahoma's ZeroConf advertising" },
+	{ "scan_Devices", func_scandevs, "Query and store attached devices" },
 	{ "status", func_status, "Display current connection informations" },
 
 	{ NULL, NULL, "Scripting"},
@@ -278,7 +279,7 @@ struct _commands {
 
 	{ NULL, NULL, "Interacting"},
 	{ "Gateway", func_Tgw, "Query your gateway own configuration" },
-	{ "Devices", func_Devs, "Query and store attached devices" },
+/*	{ "Devices", func_Devs, "" }, */
 	{ "States", func_States, "<device name> [State's name] query the states of a device" },
 
 	{ NULL, NULL, "Miscs"},

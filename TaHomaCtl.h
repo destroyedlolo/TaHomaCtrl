@@ -56,7 +56,7 @@ extern void callAPI(const char *, struct ResponseBuffer *);
 
 	/* Response processing */
 void func_Tgw(char *);
-void func_Devs(char *);
+void func_scandevs(char *);
 void func_States(char *);
 
 	/* Devices' */

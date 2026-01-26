@@ -317,7 +317,7 @@ static void printDeviceInfo(struct json_object *obj){
 	);
 }
 
-void func_Devs(char *arg){
+void func_scandevs(char *arg){
 	if(arg){
 		fputs("*E* Devices doesn't expect an argument.\n", stderr);
 		return;
