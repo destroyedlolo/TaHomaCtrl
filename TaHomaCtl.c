@@ -277,39 +277,40 @@ static void func_quit(char *){
 }
 
 struct _commands {
-	const char *name;			// Command's name
-	void(*func)(char *);	// executor
-	const char *help;			// Help message
+	const char *name;		/* Command's name */
+	void(*func)(char *);	/* executor */
+	const char *help;		/* Help message */
+	const bool devarg;		/* 1st argument is a device (enable autocompletion) */
 } Commands[] = {
-	{ NULL, NULL, "TaHoma's Configuration"},
-	{ "TaHoma_host", func_THost, "[name] set or display TaHoma's host" },
-	{ "TaHoma_address", func_TAddr, "[ip] set or display TaHoma's ip address" },
-	{ "TaHoma_port", func_TPort, "[num] set or display TaHoma's port number" },
-	{ "TaHoma_token", func_token, "[value] indicate application token" },
-	{ "timeout", func_timeout, "[value] specify API call timeout (seconds)" },
-	{ "scan_TaHoma", func_scan, "Look for Tahoma's ZeroConf advertising" },
-	{ "scan_Devices", func_scandevs, "Query and store attached devices" },
-	{ "status", func_status, "Display current connection informations" },
+	{ NULL, NULL, "TaHoma's Configuration", false},
+	{ "TaHoma_host", func_THost, "[name] set or display TaHoma's host", false },
+	{ "TaHoma_address", func_TAddr, "[ip] set or display TaHoma's ip address", false },
+	{ "TaHoma_port", func_TPort, "[num] set or display TaHoma's port number", false },
+	{ "TaHoma_token", func_token, "[value] indicate application token", false },
+	{ "timeout", func_timeout, "[value] specify API call timeout (seconds)", false },
+	{ "scan_TaHoma", func_scan, "Look for Tahoma's ZeroConf advertising", false },
+	{ "scan_Devices", func_scandevs, "Query and store attached devices", false },
+	{ "status", func_status, "Display current connection informations", false },
 
-	{ NULL, NULL, "Scripting"},
-	{ "save_config", func_save, "<file> save current configuration to the given file" },
-	{ "script", func_script, "<file> execute the file" },
+	{ NULL, NULL, "Scripting", false },
+	{ "save_config", func_save, "<file> save current configuration to the given file", false },
+	{ "script", func_script, "<file> execute the file", false },
 
-	{ NULL, NULL, "Verbosity"},
-	{ "verbose", func_verbose, "[on|off|] Be verbose" },
-	{ "trace", func_trace, "[on|off|] Trace every commands" },
+	{ NULL, NULL, "Verbosity", false},
+	{ "verbose", func_verbose, "[on|off|] Be verbose", false },
+	{ "trace", func_trace, "[on|off|] Trace every commands", false },
 
-	{ NULL, NULL, "Interacting"},
-	{ "Gateway", func_Tgw, "Query your gateway own configuration" },
-	{ "Device", func_Devs, "[name] display device \"name\" information or the devices list" },
-	{ "States", func_States, "<device name> [State's name] query the states of a device" },
+	{ NULL, NULL, "Interacting", false },
+	{ "Gateway", func_Tgw, "Query your gateway own configuration", false },
+	{ "Device", func_Devs, "[name] display device \"name\" information or the devices list", true },
+	{ "States", func_States, "<device name> [State's name] query the states of a device", true },
 
-	{ NULL, NULL, "Miscs"},
-	{ "#", NULL, "Comment, ignored line" },
-	{ "?", func_qmark, "List available commands" },
-	{ "history", func_history, "List command line history" },
-	{ "Quit", func_quit, "See you" },
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, "Miscs", false},
+	{ "#", NULL, "Comment, ignored line", false },
+	{ "?", func_qmark, "List available commands", false },
+	{ "history", func_history, "List command line history", false },
+	{ "Quit", func_quit, "See you", false },
+	{ NULL, NULL, NULL, false }
 };
 
 static void func_qmark(char *){
@@ -328,19 +329,24 @@ static void func_qmark(char *){
 	}
 }
 
+static struct _commands *findCommand(const char *cmd){
+	for(struct _commands *c = Commands; c->help; ++c){
+		if(c->name && !strcmp(cmd, c->name))
+			return c;
+	}
+
+	return NULL;
+}
+
 static void exec(const char *cmd, char *arg){
 	if(trace && *cmd != '#')
 		printf("> %s\n", cmd);
 
-	for(struct _commands *c = Commands; c->help; ++c){
-		if(c->name && !strcmp(cmd, c->name)){
-			if(c->func)
-				c->func(arg);
-			return;
-		}
-	}
-
-	printf("*E* Unknown command \"%s\" : type '?' for list of known directives\n", cmd);
+	struct _commands *c = findCommand(cmd);
+	if(c && c->func)
+		c->func(arg);
+	else
+		printf("*E* Unknown command \"%s\" : type '?' for list of known directives\n", cmd);
 }
 
 static void execline(char *l){
