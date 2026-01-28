@@ -244,9 +244,9 @@ static void addDevice(struct json_object *obj){
 	devices_list = dev;
 }
 
-struct Device *findDevice(const char *name){
+struct Device *findDevice(struct substring *name){
 	for(struct Device *r = devices_list; r; r = r->next){
-		if(!strcmp(r->label, name))
+		if(!substringcmp(name, r->label))
 			return r;
 	}
 
@@ -257,7 +257,7 @@ struct Device *findDevice(const char *name){
 	 * User commands
 	 */
 
-void func_Tgw(char *arg){
+void func_Tgw(const char *arg){
 	if(arg){
 		fputs("*E* Gateway doesn't expect an argument.\n", stderr);
 		return;
@@ -317,7 +317,7 @@ static void printDeviceInfo(struct json_object *obj){
 	);
 }
 
-void func_scandevs(char *arg){
+void func_scandevs(const char *arg){
 	if(arg){
 		fputs("*E* Devices doesn't expect an argument.\n", stderr);
 		return;
@@ -357,15 +357,18 @@ void func_scandevs(char *arg){
 	freeResponse(&buff);
 }
 
-void func_States(char *arg){
+void func_States(const char *arg){
 	if(!arg){
 		fputs("*E* States is expecting a device's name.\n", stderr);
 		return;
 	}
 
-	char *name = nextArg(arg);	/* Remove potential trailing space and get stat name */
+	struct substring devname;
+	const char *name;
 
-	struct Device *dev = findDevice(arg);
+	extractTokenSub(&devname, arg, &name);
+
+	struct Device *dev = findDevice(&devname);
 	if(!dev){
 		fputs("*E* Device not found.\n", stderr);
 		return;
@@ -397,10 +400,10 @@ void func_States(char *arg){
 				struct json_object *obj = json_object_array_get_idx(res, idx);
 
 				const char *n = getObjString(obj, OBJPATH( "name", NULL ));
-				if(!n || (name && strcmp(n, name)))	/* Looking for a specific state */
+				if(!n || (name && *name && strcmp(n, name)))	/* Looking for a specific state */
 					continue;
 
-				if(!name)
+				if(!name || !*name)
 					printf("\t%s : ", affString(n));
 				int type = getObjInt(obj, OBJPATH( "type", NULL ));
 

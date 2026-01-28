@@ -49,16 +49,16 @@ static const char *affval(const char *v){
 	 * ***/
 
 static void execscript(const char *, bool);
-static void func_qmark(char *);
+static void func_qmark(const char *);
 
-static void func_script(char *arg){
+static void func_script(const char *arg){
 	if(arg)
 		execscript(arg, false);
 	else
 		fputs("*E* Expecting a filename.\n", stderr);
 }
 
-static void func_token(char *arg){
+static void func_token(const char *arg){
 	if(arg){
 		FreeAndSet(&token, arg);
 		buildURL();
@@ -66,7 +66,7 @@ static void func_token(char *arg){
 		printf("*I* Token : %s\n", affval(token));
 }
 
-static void func_THost(char *arg){
+static void func_THost(const char *arg){
 	if(arg){
 		FreeAndSet(&tahoma, arg);
 		buildURL();
@@ -74,7 +74,7 @@ static void func_THost(char *arg){
 		printf("*I* Tahoma's host : %s\n", affval(tahoma));
 }
 
-static void func_TAddr(char *arg){
+static void func_TAddr(const char *arg){
 	if(arg){
 		FreeAndSet(&ip, arg);
 		buildURL();
@@ -82,7 +82,7 @@ static void func_TAddr(char *arg){
 		printf("*I* Tahoma's IP address : %s\n", affval(ip));
 }
 
-static void func_TPort(char *arg){
+static void func_TPort(const char *arg){
 	if(arg){
 		port = (uint16_t)atoi(arg);
 		buildURL();
@@ -90,7 +90,7 @@ static void func_TPort(char *arg){
 		printf("*I* Tahoma's port : %u\n", port);
 }
 
-static void func_save(char *arg){
+static void func_save(const char *arg){
 	if(!arg){
 		fputs("*E* file name expected\n", stderr);
 		return;
@@ -117,7 +117,7 @@ static void func_save(char *arg){
 	fclose(f);
 }
 
-static void func_status(char *){
+static void func_status(const char *){
 	printf("*I* Connection :\n"
 		"\tTahoma's host : %s\n"
 		"\tTahoma's IP : %s\n"
@@ -149,7 +149,7 @@ static void device_info(struct Device *dev){
 		printf("\t\t%s\n", state->state);
 }
 
-static void func_Devs(char *arg){
+static void func_Devs(const char *arg){
 	if(!arg){	/* List all devices */
 		for(struct Device *dev = devices_list; dev; dev = dev->next){
 			printf("%s : %s\n", dev->label, dev->url);
@@ -157,17 +157,20 @@ static void func_Devs(char *arg){
 				device_info(dev);
 		}
 	} else {	/* Info of a specific devices */
-		nextArg(arg);
-		struct Device *dev = findDevice(arg);
+		struct substring devname;
+		const char *unused;
+
+		extractTokenSub(&devname, arg, &unused);
+		struct Device *dev = findDevice(&devname);
 		if(dev){
 			printf("%s : %s\n", dev->label, dev->url);
 			device_info(dev);
 		} else
-			printf("*W* Device \"%s\" not found\n", arg);
+			printf("*W* Device \"%.*s\" not found\n", devname.len, devname.s);
 	}
 }
 
-static void func_history(char *arg){
+static void func_history(const char *arg){
 	if(arg)
 		fputs("*E* Argument is ignored\n", stderr);
 
@@ -184,7 +187,7 @@ static void func_history(char *arg){
 	history_set_history_state(my_history_state);
 }
 
-static void func_verbose(char *arg){
+static void func_verbose(const char *arg){
 	if(arg){
 		if(!strcmp(arg, "on"))
 			verbose = true;
@@ -196,7 +199,7 @@ static void func_verbose(char *arg){
 		puts(verbose ? "I'm verbose" : "I'm quiet");
 }
 
-static void func_trace(char *arg){
+static void func_trace(const char *arg){
 	if(arg){
 		if(!strcmp(arg, "on"))
 			trace = true;
@@ -208,7 +211,7 @@ static void func_trace(char *arg){
 		puts(trace ? "Traces enabled" : "Traces disabled");
 }
 
-static void func_timeout(char *arg){
+static void func_timeout(const char *arg){
 	if(arg){
 		timeout = atol(arg);
 
@@ -218,13 +221,13 @@ static void func_timeout(char *arg){
 		fputs("timeout is execting the number of seconds to wait.\n", stderr);
 }
 
-static void func_quit(char *){
+static void func_quit(const char *){
 	exit(EXIT_SUCCESS);
 }
 
 struct _commands {
 	const char *name;		/* Command's name */
-	void(*func)(char *);	/* executor */
+	void(*func)(const char *);	/* executor */
 	const char *help;		/* Help message */
 	const bool devarg;		/* 1st argument is a device (enable autocompletion) */
 } Commands[] = {
@@ -259,7 +262,7 @@ struct _commands {
 	{ NULL, NULL, NULL, false }
 };
 
-static void func_qmark(char *){
+static void func_qmark(const char *){
 	puts("List of known commands\n"
 		 "======================");
 
@@ -275,33 +278,34 @@ static void func_qmark(char *){
 	}
 }
 
-static struct _commands *findCommand(const char *cmd){
+static struct _commands *findCommand(struct substring *cmd){
 	for(struct _commands *c = Commands; c->help; ++c){
-		if(c->name && !strcmp(cmd, c->name))
+		if(c->name && !substringcmp(cmd, c->name))
 			return c;
 	}
 
 	return NULL;
 }
 
-static void exec(const char *cmd, char *arg){
-	if(trace && *cmd != '#')
-		printf("> %s\n", cmd);
+static void exec(struct substring *cmd, const char *arg){
+	if(trace && *cmd->s != '#')
+		printf("> %.*s\n", cmd->len, cmd->s);
 
 	struct _commands *c = findCommand(cmd);
 	if(c && c->func)
 		c->func(arg);
 	else
-		printf("*E* Unknown command \"%s\" : type '?' for list of known directives\n", cmd);
+		printf("*E* Unknown command \"%.*s\" : type '?' for list of known directives\n", cmd->len, cmd->s);
 }
 
 static void execline(char *l){
-	char *arg;
+	struct substring cmd;
+	const char *arg;
 
-	if(extractToken(l, &arg))
-		exec(l, *arg ? arg:NULL );
+	if(extractTokenSub(&cmd, l, &arg))
+		exec(&cmd, *arg ? arg:NULL );
 	else	/* No argument */
-		exec(l, NULL);
+		exec(&cmd, NULL);
 }
 
 void execscript(const char *name, bool dontfail){

@@ -35,22 +35,18 @@ extern bool verbose;
 extern const char *FreeAndSet(char **storage, const char *val);	/* Update a storage with a new value */
 extern void spent(bool);	/* Time spent. Caution, not reentrant */
 
-	/* Destructive string management */
-extern char *nextArg(char *);	/* Point to the next argument*/
-extern bool extractToken(char *, char **);
-
 	/* Tokenisation and sub strings' */
 struct substring {
 	const char *s;
 	size_t len;
 };
 
-extern bool extractTokenSub(struct substring *, char *, const char**);
+extern bool extractTokenSub(struct substring *, const char *, const char**);
 extern int substringcmp(struct substring *, const char *);
 
 	/* Configuration related */
 extern void clean(char **);		/* Safe free() an object */
-extern void func_scan(char *);
+extern void func_scan(const char *);
 
 	/* Response handling */
 struct ResponseBuffer {
@@ -67,9 +63,9 @@ extern void buildURL(void);
 extern void callAPI(const char *, struct ResponseBuffer *);
 
 	/* Response processing */
-void func_Tgw(char *);
-void func_scandevs(char *);
-void func_States(char *);
+void func_Tgw(const char *);
+void func_scandevs(const char *);
+void func_States(const char *);
 
 	/* Devices' */
 struct Command {
@@ -95,5 +91,5 @@ extern struct Device {
 	struct State *states;
 } *devices_list;
 
-extern struct Device *findDevice(const char *);
+extern struct Device *findDevice(struct substring *);
 #endif

@@ -134,7 +134,7 @@ static void client_callback(AvahiClient *c, AvahiClientState state, AVAHI_GCC_UN
 	}
 }
 
-void func_scan(char *){
+void func_scan(const char *){
 	AvahiClient *client = NULL;
 	AvahiServiceBrowser *sb = NULL;
 	int error;

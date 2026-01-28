@@ -15,7 +15,7 @@
 	 * sometime we can't (as example during line edition).
 	 * It's why 2 versions are provided.
 	 */
-bool extractTokenSub(struct substring *res, char *l, const char**arg){
+bool extractTokenSub(struct substring *res, const char *l, const char**arg){
 	/* Extract the first token of a line
 	 * <- bool : is an argument ?
 	 */
@@ -33,17 +33,6 @@ bool extractTokenSub(struct substring *res, char *l, const char**arg){
 	}
 }
 
-bool extractToken(char *l, char **arg){
-	if((*arg = strpbrk(l, " \t"))){
-		**arg = 0;
-		++(*arg);
-		while( **arg && !isgraph(**arg))	/* skip non printable */
-			++(*arg);
-		return true;
-	}
-	return false;
-}
-
 int substringcmp(struct substring *s, const char *with){
 	/* in the current version, the returned value says :
 	 *	<0 is s<with
@@ -56,18 +45,6 @@ int substringcmp(struct substring *s, const char *with){
 		return(l - s->len);
 
 	return strncmp(s->s, with, s->len);
-}
-
-char *nextArg(char *arg){
-	char *p = strchr(arg, ' ');
-	if(!p)
-		return NULL;
-
-	*(p++) = 0;	/* end current argument */
-	if(*p)
-		return p;
-	else
-		return NULL;
 }
 
 	/* Storage management */
