@@ -363,10 +363,18 @@ void func_States(const char *arg){
 		return;
 	}
 
-	struct substring devname;
-	const char *name;
+	struct substring devname, name;
+	const char *next;
 
-	extractTokenSub(&devname, arg, &name);
+		/* Extract the device name */
+	extractTokenSub(&devname, arg, &next);
+
+		/* Extract the state name ... if any */
+	name.s = NULL;	/* Yet empty */
+	if(next && *next){	/* We got an name */
+		const char *unused;
+		extractTokenSub(&name, next, &unused);
+	}
 
 	struct Device *dev = findDevice(&devname);
 	if(!dev){
@@ -400,10 +408,10 @@ void func_States(const char *arg){
 				struct json_object *obj = json_object_array_get_idx(res, idx);
 
 				const char *n = getObjString(obj, OBJPATH( "name", NULL ));
-				if(!n || (name && *name && strcmp(n, name)))	/* Looking for a specific state */
+				if(!n || (name.s && substringcmp(&name, n)))	/* Looking for a specific state */
 					continue;
 
-				if(!name || !*name)
+				if(!name.s)
 					printf("\t%s : ", affString(n));
 				int type = getObjInt(obj, OBJPATH( "type", NULL ));
 

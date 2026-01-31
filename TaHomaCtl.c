@@ -15,7 +15,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define VERSION "0.6"
+#define VERSION "0.7"
 
 	/* **
 	 * Configuration
@@ -36,6 +36,8 @@ bool debug = false;
 
 static const char *ascript = NULL;	/* User script to launch (from launch parameters) */
 static bool nostartup = false;	/* Do not source .tahomactl */
+
+struct Device *dev;	/* Device currently considered */
 
 static const char *affval(const char *v){
 	if(v)
@@ -161,7 +163,7 @@ static void func_Devs(const char *arg){
 		const char *unused;
 
 		extractTokenSub(&devname, arg, &unused);
-		struct Device *dev = findDevice(&devname);
+		dev = findDevice(&devname);
 		if(dev){
 			printf("%s : %s\n", dev->label, dev->url);
 			device_info(dev);
@@ -225,41 +227,49 @@ static void func_quit(const char *){
 	exit(EXIT_SUCCESS);
 }
 
+static char *state_generator(const char *, int);
+
 struct _commands {
 	const char *name;		/* Command's name */
 	void(*func)(const char *);	/* executor */
 	const char *help;		/* Help message */
+		/* Argument managing
+		 * Notez-bien : 1st and 2nd argument autocompletion are enabled only for
+		 *	commands expecting a device as first element.
+		 *	The second one is linked with the device's content.
+		 */
 	const bool devarg;		/* 1st argument is a device (enable autocompletion) */
+	char *(*autofunc)(const char *, int);	/* Function to be used as 2nd argument completion */
 } Commands[] = {
-	{ NULL, NULL, "TaHoma's Configuration", false},
-	{ "TaHoma_host", func_THost, "[name] set or display TaHoma's host", false },
-	{ "TaHoma_address", func_TAddr, "[ip] set or display TaHoma's ip address", false },
-	{ "TaHoma_port", func_TPort, "[num] set or display TaHoma's port number", false },
-	{ "TaHoma_token", func_token, "[value] indicate application token", false },
-	{ "timeout", func_timeout, "[value] specify API call timeout (seconds)", false },
-	{ "scan_TaHoma", func_scan, "Look for Tahoma's ZeroConf advertising", false },
-	{ "scan_Devices", func_scandevs, "Query and store attached devices", false },
-	{ "status", func_status, "Display current connection informations", false },
+	{ NULL, NULL, "TaHoma's Configuration", false, NULL},
+	{ "TaHoma_host", func_THost, "[name] set or display TaHoma's host", false, NULL},
+	{ "TaHoma_address", func_TAddr, "[ip] set or display TaHoma's ip address", false, NULL},
+	{ "TaHoma_port", func_TPort, "[num] set or display TaHoma's port number", false, NULL},
+	{ "TaHoma_token", func_token, "[value] indicate application token", false, NULL},
+	{ "timeout", func_timeout, "[value] specify API call timeout (seconds)", false, NULL},
+	{ "scan_TaHoma", func_scan, "Look for Tahoma's ZeroConf advertising", false, NULL},
+	{ "scan_Devices", func_scandevs, "Query and store attached devices", false, NULL},
+	{ "status", func_status, "Display current connection informations", false, NULL},
 
-	{ NULL, NULL, "Scripting", false },
-	{ "save_config", func_save, "<file> save current configuration to the given file", false },
-	{ "script", func_script, "<file> execute the file", false },
+	{ NULL, NULL, "Scripting", false, NULL},
+	{ "save_config", func_save, "<file> save current configuration to the given file", false, NULL},
+	{ "script", func_script, "<file> execute the file", false, NULL},
 
 	{ NULL, NULL, "Verbosity", false},
-	{ "verbose", func_verbose, "[on|off|] Be verbose", false },
-	{ "trace", func_trace, "[on|off|] Trace every commands", false },
+	{ "verbose", func_verbose, "[on|off|] Be verbose", false, NULL},
+	{ "trace", func_trace, "[on|off|] Trace every commands", false, NULL},
 
-	{ NULL, NULL, "Interacting", false },
-	{ "Gateway", func_Tgw, "Query your gateway own configuration", false },
-	{ "Device", func_Devs, "[name] display device \"name\" information or the devices list", true },
-	{ "States", func_States, "<device name> [State's name] query the states of a device", true },
+	{ NULL, NULL, "Interacting", false, NULL},
+	{ "Gateway", func_Tgw, "Query your gateway own configuration", false, NULL},
+	{ "Device", func_Devs, "[name] display device \"name\" information or the devices list", true, NULL },
+	{ "States", func_States, "<device name> [State's name] query the states of a device", true, state_generator },
 
-	{ NULL, NULL, "Miscs", false},
-	{ "#", NULL, "Comment, ignored line", false },
-	{ "?", func_qmark, "List available commands", false },
-	{ "history", func_history, "List command line history", false },
-	{ "Quit", func_quit, "See you", false },
-	{ NULL, NULL, NULL, false }
+	{ NULL, NULL, "Miscs", false, NULL},
+	{ "#", NULL, "Comment, ignored line", false, NULL},
+	{ "?", func_qmark, "List available commands", false, NULL},
+	{ "history", func_history, "List command line history", false, NULL},
+	{ "Quit", func_quit, "See you", false, NULL},
+	{ NULL, NULL, NULL, false, NULL}
 };
 
 static void func_qmark(const char *){
@@ -309,7 +319,7 @@ static void execline(char *l){
 		exec(&cmd, NULL);
 }
 
-void execscript(const char *name, bool dontfail){
+static void execscript(const char *name, bool dontfail){
 	FILE *f = fopen(name, "r");
 	if(!f){
 		if(dontfail)
@@ -335,7 +345,7 @@ void execscript(const char *name, bool dontfail){
 	fclose(f);
 }
 
-char *command_generator(const char *text, int state){
+static char *command_generator(const char *text, int state){
     static int list_index, len;
     const char *name;
 
@@ -353,10 +363,10 @@ char *command_generator(const char *text, int state){
 	    }
 	}
 
-    return ((char *)NULL);
+    return((char *)NULL);
 }
 
-char *dev_generator(const char *text, int state){
+static char *dev_generator(const char *text, int state){
 	static struct Device *dev;
 	static int len;
 
@@ -373,7 +383,27 @@ char *dev_generator(const char *text, int state){
 			return(strdup(cur->label));
 	}
 
-    return ((char *)NULL);
+    return((char *)NULL);
+}
+
+static char *state_generator(const char *text, int state){
+	static struct State *st;
+	static int len;
+
+	if(!state){
+		st = dev->states;
+		len = strlen(text);
+	}
+
+	while(st){
+		struct State *cur = st;
+		st = st->next;
+
+		if(!strncmp(cur->state, text, len))
+			return(strdup(cur->state));
+	}
+	
+    return((char *)NULL);
 }
 
 char **command_completion(const char *text, int start, int end){
@@ -387,10 +417,41 @@ char **command_completion(const char *text, int start, int end){
 	extractTokenSub(&cmd, rl_line_buffer, &arg);
 	
 	struct _commands *c = findCommand(&cmd);
-	if(c && c->devarg)
-		return rl_completion_matches(text, dev_generator);
+	if(c && c->devarg){
+			/* Determine the argument number */
+		int i=0;
+		while(isblank(rl_line_buffer[i])){	/* Leading space */
+			++i;
+			if(i >= start){	/* Should never happen */
+				puts("*B* Leading space bug !!!");
+				return((char **)NULL);
+			}
+		}
 
-    return ((char **)NULL);
+		bool inspace = false;
+		unsigned int argnum = 0;
+		for(; i<start; ++i){
+			if(isblank(rl_line_buffer[i])){
+				if(!inspace)
+					++argnum;
+				inspace = true;
+			} else
+				inspace = false;
+		}
+
+		if(argnum == 1)
+			return rl_completion_matches(text, dev_generator);
+		else if(c->autofunc){
+			struct substring devname;
+			const char *unused;
+
+			extractTokenSub(&devname, arg, &unused);
+			dev = findDevice(&devname);
+			return rl_completion_matches(text, c->autofunc);
+		}
+	}
+
+    return((char **)NULL);
 }
 
 	/* ***

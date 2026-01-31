@@ -37,7 +37,7 @@ extern void spent(bool);	/* Time spent. Caution, not reentrant */
 
 	/* Tokenisation and sub strings' */
 struct substring {
-	const char *s;
+	const char *s;	/* NULL if the string is empty */
 	size_t len;
 };
 
