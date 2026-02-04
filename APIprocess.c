@@ -441,3 +441,6 @@ void func_States(const char *arg){
 	}
 	freeResponse(&buff);
 }
+
+void func_Command(const char *){
+}

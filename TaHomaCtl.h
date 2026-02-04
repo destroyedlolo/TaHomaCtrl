@@ -66,6 +66,7 @@ extern void callAPI(const char *, struct ResponseBuffer *);
 void func_Tgw(const char *);
 void func_scandevs(const char *);
 void func_States(const char *);
+void func_Command(const char *);
 
 	/* Devices' */
 struct Command {

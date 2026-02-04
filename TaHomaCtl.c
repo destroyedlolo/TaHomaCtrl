@@ -15,7 +15,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define VERSION "0.7"
+#define VERSION "0.8"
 
 	/* **
 	 * Configuration
@@ -228,6 +228,7 @@ static void func_quit(const char *){
 }
 
 static char *state_generator(const char *, int);
+static char *action_generator(const char *, int);
 
 struct _commands {
 	const char *name;		/* Command's name */
@@ -262,7 +263,8 @@ struct _commands {
 	{ NULL, NULL, "Interacting", false, NULL},
 	{ "Gateway", func_Tgw, "Query your gateway own configuration", false, NULL},
 	{ "Device", func_Devs, "[name] display device \"name\" information or the devices list", true, NULL },
-	{ "States", func_States, "<device name> [State's name] query the states of a device", true, state_generator },
+	{ "States", func_States, "<device name> [state name] query the states of a device", true, state_generator },
+	{ "Command", func_Command, "<device name> <command name> <argument> send a command to a device", true, action_generator },
 
 	{ NULL, NULL, "Miscs", false, NULL},
 	{ "#", NULL, "Comment, ignored line", false, NULL},
@@ -401,6 +403,26 @@ static char *state_generator(const char *text, int state){
 
 		if(!strncmp(cur->state, text, len))
 			return(strdup(cur->state));
+	}
+	
+    return((char *)NULL);
+}
+
+static char *action_generator(const char *text, int state){
+	static struct Command *com;
+	static int len;
+
+	if(!state){
+		com = dev->commands;
+		len = strlen(text);
+	}
+
+	while(com){
+		struct Command *cur = com;
+		com = com->next;
+
+		if(!strncmp(cur->command, text, len))
+			return(strdup(cur->command));
 	}
 	
     return((char *)NULL);
