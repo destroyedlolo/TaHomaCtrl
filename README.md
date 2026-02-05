@@ -20,8 +20,9 @@ It is ideal for integration into shell scripts, crontabs, home automation backen
 ## ⚠️ Limitations
 
 **TaHomaCtl** is interacting directly with your TaHoma, will not try to interpret results, will not try to secure
-dangerous actions : it's only an interface to use the Overkiz's public local interface, no more, no less.  
-In other words, it has no knowlegde about the devices you're steering.
+dangerous actions : it's only a tool to interact with the Overkiz's public local interface, no more, no less.  
+In other words, it has no knowlegde about the devices you're steering. 
+The benefit is you can control any devices, even if I, the developer, haven't any information about it.
 
 In addition, TaHomaCtl is dealing directly with your gateway. Consequently, it can't interact or control stuffs managed at Somfy's cloud side (like *Somfy Protect* or *Cloud2Cloud* processes).  
 The solution may be to use the Overkiz's "*end user cloud public API*". As my smart home solution aims to be as local as possible, it's not currently planned for integration in TaHomaCtl.
@@ -187,7 +188,7 @@ TaHomaCtl > scan_Devices
 		Type: PROTOCOL_GATEWAY
 TaHomaCtl > status
 *I* Connection :
-	Tahoma's host : gateway-2095-0445-1705.local
+	Tahoma's host : gateway-xxxx-xxxx-xxxx.local
 	Tahoma's IP : 192.168.0.30
 	Tahoma's port : 8443
 	Token : set
